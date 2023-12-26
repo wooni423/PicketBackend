@@ -1,11 +1,13 @@
 package com.swyg.picketbackend.auth.jwt;
 
 import com.swyg.picketbackend.auth.dto.auth.res.TokenResponseDTO;
+import com.swyg.picketbackend.auth.service.MemberService;
 import com.swyg.picketbackend.global.exception.CustomException;
 import com.swyg.picketbackend.global.util.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +33,7 @@ public class TokenProvider { // 유저 정보로 JWT 토큰을 만들거나 토�
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
     private final Key key;
+
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);

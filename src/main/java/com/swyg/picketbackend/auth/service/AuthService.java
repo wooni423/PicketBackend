@@ -94,6 +94,10 @@ public class AuthService {
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenResponseDTO tokenResponseDto = tokenProvider.generateTokenDto(authentication);
 
+        Member member = memberRepository.findById(Long.valueOf(authentication.getName()))
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        tokenResponseDto.setNickname(member.getNickname());
 
         // 4. RefreshToken 저장
         RefreshToken refreshToken = RefreshToken.builder()

@@ -31,10 +31,10 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @Column(name = "board_id")
     private Long id;  // 게시글 번호
 
-    @Column(columnDefinition = "VARCHAR(10000)")
+    @Column(columnDefinition = "TEXT")
     private String title; // 게시글 제목
 
-    @Column(columnDefinition = "VARCHAR(10000)")
+    @Column(columnDefinition = "TEXT")
     private String content; // 게시글 내용
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
