@@ -1,10 +1,10 @@
 package com.swyg.picketbackend.auth.oauth;
 
 
-
 import com.swyg.picketbackend.auth.dto.auth.req.LoginDTO;
 import com.swyg.picketbackend.auth.service.AuthService;
 import com.swyg.picketbackend.auth.util.PrincipalDetails;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,7 +36,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 
-        String email  = principalDetails.getName();
+        String email = principalDetails.getName();
 
         String password = "google";
 
@@ -50,9 +50,12 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
         ResponseEntity<String> tokenResponse = sendLoginRequest(loginDTO);
 
-        log.info(String.valueOf(tokenResponse));
+        String accessToken = extractAccessToken(tokenResponse);
 
-        super.onAuthenticationSuccess(request, response, authentication);
+        log.info(tokenResponse.getBody());
+        log.info("Access Token: {}", accessToken);
+
+
     }
 
     private ResponseEntity<String> sendLoginRequest(LoginDTO loginDTO) { // 로그인 요청
@@ -70,4 +73,23 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         return restTemplate.postForEntity(loginUrl, requestEntity, String.class);
     }
 
+    private String extractAccessToken(ResponseEntity<String> tokenResponse) {
+        // 여기서는 간단하게 JSON 문자열을 파싱하는 예제를 제시합니다.
+        // 만약 실제로는 JSON 라이브러리를 사용하는 것이 좋습니다.
+        String jsonResponse = tokenResponse.getBody();
+
+
+        assert jsonResponse != null;
+        int startIndex = jsonResponse.indexOf("\"accessToken\":\"") + "\"accessToken\":\"".length();
+        int endIndex = jsonResponse.indexOf("\"", startIndex);
+
+        // accessToken 추출
+        if (startIndex != -1 && endIndex != -1) {
+            return jsonResponse.substring(startIndex, endIndex);
+        } else {
+            // 추출 실패 시 처리 (예: 빈 문자열 또는 예외 throw)
+            throw new RuntimeException("Failed to extract accessToken from JSON response.");
+        }
+
+    }
 }
