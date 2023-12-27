@@ -51,7 +51,7 @@ public class BoardController {
     @GetMapping("/list/search") // 전체 버킷 리스트 조회
     public Slice<GetBoardListResponseDTO> boardSearchList(
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "categoryList", required = true) List<Long> categoryList,
+            @RequestParam(name = "categoryList", required = false) List<Long> categoryList,
             @PageableDefault(size = 8, page = 0) Pageable pageable) {
         return boardService.searchBoardList(keyword, categoryList, pageable);
 

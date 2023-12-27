@@ -2,6 +2,8 @@ package com.swyg.picketbackend.board.repository.querydsl.board;
 
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.swyg.picketbackend.auth.domain.QMember;
 import com.swyg.picketbackend.board.Entity.*;
@@ -16,6 +18,8 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -60,24 +64,25 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
         entityGraph.addSubgraph("scrap");
         entityGraph.addSubgraph("member");
 
-        // 카테고리별 Board ID 조회
-        List<Long> boardIds = jpaQueryFactory
-                .select(boardCategory.board.id)
-                .from(boardCategory)
-                .where(boardCategory.category.id.in(categoryList))
-                .distinct()
-                .fetch();
+        // 검색 조건
+        BooleanExpression searchCondition = Expressions.asBoolean(true); // 초기 조건은 항상 참(카테고리&키워드가 없을때 전체 검색)
 
+        // 카테고리가 비어있지 않은 경우 카테고리별 Board Id 조회
+        if (categoryList != null && !categoryList.isEmpty()) {
+            searchCondition = searchCondition.and(board.id.in(
+                    JPAExpressions.select(boardCategory.board.id)
+                            .from(boardCategory)
+                            .where(boardCategory.category.id.in(categoryList))
+                            .distinct()
+            ));
+        }
 
-        // 게시글 검색 조건
-        BooleanExpression searchCondition;
+        // 검색어가 비어있지 않은 경우 검색어로 추가 필터링
         if (StringUtils.hasText(keyword)) {
-            searchCondition = board.id.in(boardIds)
-                    .and(board.title.containsIgnoreCase(keyword)
-                            .or(board.content.containsIgnoreCase(keyword)));
-        } else {
-            // 키워드가 주어지지 않은 경우 모든 게시글을 대상으로 함
-            searchCondition = board.id.in(boardIds);
+            searchCondition = searchCondition.and(
+                    board.title.containsIgnoreCase(keyword)
+                            .or(board.content.containsIgnoreCase(keyword))
+            );
         }
 
 
@@ -89,13 +94,15 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
                 .limit(pageable.getPageSize() + 1) // 1개 더 가져와서 hasNext 여부 확인
                 .fetch();
 
-        boolean hasNext = boardList.size() > pageable.getPageSize();
+      /*  // 다음 페이지 확인
+        boolean hasNext = jpaQueryFactory
+                .selectFrom(board)
+                .where(searchCondition)
+                .offset(pageable.getOffset() + pageable.getPageSize())
+                .limit(1);*/
 
-        if (hasNext) {
-            boardList.remove(pageable.getPageSize());
-        }
 
-        return new SliceImpl<>(boardList, pageable, hasNext);
+        return null;
     }
 
 
