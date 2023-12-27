@@ -59,8 +59,8 @@ public class BoardService {
     }
 
     @Transactional
-    public Slice<GetBoardListResponseDTO> searchBoardList(String keyword, List<Long> categoryList, Pageable pageable) {
-        Slice<Board> resultList = boardRepository.boardSearchList(keyword, categoryList, pageable);
+    public Slice<GetBoardListResponseDTO> searchBoardList(Long lastBoardId,String keyword, List<Long> categoryList, Pageable pageable) {
+        Slice<Board> resultList = boardRepository.boardSearchList(lastBoardId,keyword, categoryList, pageable);
         return GetBoardListResponseDTO.toDTOList(resultList);
     }
 

@@ -2,8 +2,6 @@ package com.swyg.picketbackend.board.dto.req.board;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swyg.picketbackend.auth.domain.Member;
-import com.swyg.picketbackend.board.Entity.Board;
 import com.swyg.picketbackend.board.Entity.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

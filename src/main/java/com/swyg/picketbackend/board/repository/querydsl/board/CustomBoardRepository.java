@@ -11,7 +11,7 @@ public interface CustomBoardRepository {
 
     Board findBoardWithDetails(Long boardId);
 
-    Slice<Board> boardSearchList(String keyword, List<Long> CategoryList, Pageable pageable);
+    Slice<Board> boardSearchList(Long lastBoardId,String keyword, List<Long> CategoryList, Pageable pageable);
 
 
 

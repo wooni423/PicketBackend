@@ -49,13 +49,9 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
     }
 
     @Override
-    public Slice<Board> boardSearchList(String keyword, List<Long> categoryList, Pageable pageable) {
+    public Slice<Board> boardSearchList(Long lastBoardId, String keyword, List<Long> categoryList, Pageable pageable) {
         QBoard board = QBoard.board;
         QBoardCategory boardCategory = QBoardCategory.boardCategory;
-        QCategory category = QCategory.category;
-        QMember member = QMember.member;
-        QScrap scrap = QScrap.scrap;
-        QHeart heart = QHeart.heart;
 
         EntityGraph<?> entityGraph = entityManager.createEntityGraph(Board.class);
         entityGraph.addSubgraph("commentList");
@@ -84,7 +80,6 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
                             .or(board.content.containsIgnoreCase(keyword))
             );
         }
-
 
         // 페이징 및 무한 스크롤
         List<Board> boardList = jpaQueryFactory
