@@ -1,6 +1,8 @@
 package com.swyg.picketbackend.board.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.nimbusds.jose.shaded.gson.Gson;
+import com.nimbusds.jose.shaded.gson.reflect.TypeToken;
 import com.swyg.picketbackend.auth.util.SecurityUtil;
 import com.swyg.picketbackend.board.Entity.*;
 import com.swyg.picketbackend.auth.domain.Member;
@@ -9,6 +11,7 @@ import com.swyg.picketbackend.board.dto.res.board.GetBoardDetailsResponseDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetBoardListResponseDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetMyBoardListResponseDTO;
 import com.swyg.picketbackend.board.dto.req.board.PatchBoardRequestDTO;
+import com.swyg.picketbackend.board.dto.res.board.SimpleBoardDTO;
 import com.swyg.picketbackend.board.repository.BoardCategoryRepository;
 import com.swyg.picketbackend.board.repository.BoardRepository;
 import com.swyg.picketbackend.global.exception.CustomException;
@@ -23,9 +26,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -55,12 +63,12 @@ public class BoardService {
     }
 
     @Transactional
-    public Slice<GetBoardListResponseDTO> searchBoardList(Long lastBoardId,String keyword, List<Long> categoryList, Pageable pageable) {
-        Slice<Board> resultList = boardRepository.boardSearchList(lastBoardId,keyword, categoryList, pageable);
+    public Slice<GetBoardListResponseDTO> searchBoardList(Long lastBoardId, String keyword, List<Long> categoryList, Pageable pageable) {
+        Slice<Board> resultList = boardRepository.boardSearchList(lastBoardId, keyword, categoryList, pageable);
         return GetBoardListResponseDTO.toDTOList(resultList);
     }
 
-    
+
     // 게시물 상세 조회
     @Transactional
     public GetBoardDetailsResponseDTO detailBoard(Long boardId) {
@@ -68,7 +76,21 @@ public class BoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND));
 
         Board target = boardRepository.findBoardWithDetails(boardId);
-        return GetBoardDetailsResponseDTO.of(target);
+        List<SimpleBoardDTO> simpleRecommendedPosts = new ArrayList<>(); // SimpleBoardDTO 리스트로 선언
+        try {
+            List<Long> recommendedPostIds = getRecommendedPosts(boardId);
+            for (Long postId : recommendedPostIds) {
+                boardRepository.findById(postId).ifPresent(recommendedBoard -> {
+                    SimpleBoardDTO dto = new SimpleBoardDTO(recommendedBoard); // Board를 SimpleBoardDTO로 변환
+                    simpleRecommendedPosts.add(dto);
+                });
+            }
+        } catch (IOException e) {
+            // 로그 남기기
+            log.error("Error while fetching recommended posts", e);
+        }
+
+        return GetBoardDetailsResponseDTO.of(target, simpleRecommendedPosts);
 
     }
 
@@ -82,6 +104,8 @@ public class BoardService {
 
         List<Category> categoryList = postBoardRequestDTO.toCategoryList(); // 게시물 소속 카테고리 ID 수집
 
+        String combinedText = postBoardRequestDTO.getTitle() + " " + postBoardRequestDTO.getContent();
+        String vectorJson = runPythonScript(combinedText); // 파이썬 스크립트 실행
 
         UUID uuid = UUID.randomUUID();
 
@@ -91,7 +115,7 @@ public class BoardService {
         String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + filename;
 
         // dto -> Entity
-        Board board = Board.toEntity(postBoardRequestDTO, member, filename, fileUrl);
+        Board board = Board.toEntity(postBoardRequestDTO, member, filename, fileUrl,vectorJson);
 
         Board boardEntity = boardRepository.save(board);
 
@@ -114,8 +138,11 @@ public class BoardService {
 
         List<Category> categoryList = postBoardRequestDTO.toCategoryList(); // 게시물 소속 카테고리 ID 수집
 
+        String combinedText = postBoardRequestDTO.getTitle() + " " + postBoardRequestDTO.getContent();
+        String vectorJson = runPythonScript(combinedText); // 파이썬 스크립트 실행
+
         // dto -> Entity
-        Board board = Board.toEntity(postBoardRequestDTO, member, null, null);
+        Board board = Board.toEntity(postBoardRequestDTO, member, null, null,vectorJson);
 
         Board boardEntity = boardRepository.save(board);
 
@@ -231,6 +258,61 @@ public class BoardService {
         // 4. Amazon s3 이미지 삭제
         s3Service.deleteFile(targetFileName);
 
+    }
+
+    private String runPythonScript(String text) {
+        try {
+            String pythonScriptPath = "C:\\Users\\choig\\git\\PicketBackend\\src\\script\\vectoized.py"; // 파이썬 스크립트 파일 경로
+            String pythonExecutablePath = "C:\\Users\\choig\\miniconda3\\envs\\transformers_env\\python.exe";
+
+            ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutablePath, pythonScriptPath, text);
+            processBuilder.redirectErrorStream(true); // 에러 스트림과 표준 출력 스트림 병합
+
+            Process process = processBuilder.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String output = reader.lines().collect(Collectors.joining("\n"));
+            int exitCode = process.waitFor();
+
+            if (exitCode != 0) {
+                throw new RuntimeException("Python script execution failed");
+            }
+
+            return output; // 벡터 데이터를 JSON 문자열로 반환
+        } catch (Exception e) {
+            throw new RuntimeException("Error running python script", e);
+        }
+    }
+
+    public List<Long> getRecommendedPosts(Long basePostId) throws IOException {
+        // 파이썬 스크립트를 호출하고, 기준 게시물 ID만 전달합니다.
+        List<Long> recommendedPostIds = runPythonScriptForRecommendation(basePostId);
+        log.info("Recommended Post IDs: " + recommendedPostIds);
+        return recommendedPostIds;
+    }
+
+    private List<Long> runPythonScriptForRecommendation(Long basePostId) throws IOException {
+        String pythonScriptPath = "C:\\Users\\choig\\git\\PicketBackend\\src\\script\\recommand.py";
+        String pythonExecutablePath = "C:\\Users\\choig\\miniconda3\\envs\\transformers_env\\python.exe";
+
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutablePath, pythonScriptPath, basePostId.toString());
+        processBuilder.redirectErrorStream(true);
+
+        Process process = processBuilder.start();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String output = reader.lines().collect(Collectors.joining("\n"));
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Python script exited with error. Exit Code: " + exitCode);
+            }
+
+            Type listType = new TypeToken<ArrayList<Long>>() {
+            }.getType();
+            return new Gson().fromJson(output, listType);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Python script execution interrupted", e);
+        }
     }
 
 

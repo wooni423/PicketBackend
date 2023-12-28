@@ -55,6 +55,9 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @Column(columnDefinition = "VARCHAR(3000)")
     private String filepath; // 파일 경로
 
+    @Column(columnDefinition = "TEXT")
+    private String vector;
+
     @Column
     private Long isCompleted; // 완료 여부  0: 진행 중  1: 완료
 
@@ -86,7 +89,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
 
 
     // dto -> entity
-    public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath) {
+    public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath,String vectorJson) {
         return Board.builder()
                 .title(postBoardRequestDTO.getTitle())
                 .content(postBoardRequestDTO.getContent())
@@ -94,6 +97,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
                 .member(member)
                 .filename(filename)
                 .filepath(filepath)
+                .vector(vectorJson)
                 .heart(null)
                 .scrap(null)
                 .isCompleted(0L)

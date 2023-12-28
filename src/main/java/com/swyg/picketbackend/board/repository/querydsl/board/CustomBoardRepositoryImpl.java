@@ -27,6 +27,7 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
 
     @Override
     public Board findBoardWithDetails(Long boardId) {
+
         QBoard boardDetails = QBoard.board;
         QCategory category = QCategory.category;
         EntityGraph<?> entityGraph = entityManager.getEntityGraph("Board.detail");

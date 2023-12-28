@@ -1,5 +1,6 @@
 package com.swyg.picketbackend.board.dto.res.board;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.swyg.picketbackend.board.Entity.Board;
 import com.swyg.picketbackend.board.Entity.BoardCategory;
 import com.swyg.picketbackend.board.dto.util.CommentDTO;
@@ -12,7 +13,10 @@ import java.util.List;
 
 
 @Getter
+@ToString
 @Builder
+@AllArgsConstructor  // Generates a constructor for all fields
+@NoArgsConstructor   // Generates a no-args constructor
 public class GetBoardDetailsResponseDTO {
 
     @Schema(description = "게시글 번호", example = "1")
@@ -47,9 +51,12 @@ public class GetBoardDetailsResponseDTO {
     @Schema(description = "버킷 댓글 목록", example = "댓글 작성자 닉네임,댓글내용,작성날짜,수정날짜")
     private List<CommentDTO> commentList; // 게시글 댓글 리스트
 
+    @JsonProperty("recommendedPosts")
+    @Schema(description = "추천 게시물 목록", example = "추천 게시물 정보")
+    private List<SimpleBoardDTO> recommendedPosts;
 
     // entity -> dto
-    public static GetBoardDetailsResponseDTO of(Board board) {
+    public static GetBoardDetailsResponseDTO of(Board board, List<SimpleBoardDTO> recommendedPosts) {
         return GetBoardDetailsResponseDTO.builder()
                 .boardId(board.getId())
                 .title(board.getTitle())
@@ -61,6 +68,7 @@ public class GetBoardDetailsResponseDTO {
                 .scrapCount((long) board.getScrap().size()) // 댓글 수
                 .categoryList(board.getBoardCategoryList())
                 .commentList(CommentDTO.toCommentDTO(board.getCommentList()))
+                .recommendedPosts(recommendedPosts)
                 .build();
     }
 
