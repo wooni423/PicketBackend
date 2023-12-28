@@ -1,7 +1,7 @@
 package com.swyg.picketbackend.board.dto.res.board;
 
 import com.swyg.picketbackend.board.Entity.Board;
-import com.swyg.picketbackend.board.dto.util.BoardCategoryDTO;
+import com.swyg.picketbackend.board.Entity.BoardCategory;
 import com.swyg.picketbackend.board.dto.util.CommentDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -12,7 +12,6 @@ import java.util.List;
 
 
 @Getter
-@ToString
 @Builder
 public class GetBoardDetailsResponseDTO {
 
@@ -43,14 +42,14 @@ public class GetBoardDetailsResponseDTO {
     private Long scrapCount; // 스크랩 개수
 
     @Schema(description = "버킷 카테고리", example = "[3 건강,4 자기개발]")
-    private List<BoardCategoryDTO> categoryList;  // 카테고리 번호 및 이름가져오기
+    private List<BoardCategory> categoryList;  // 카테고리 번호 및 이름가져오기
 
     @Schema(description = "버킷 댓글 목록", example = "댓글 작성자 닉네임,댓글내용,작성날짜,수정날짜")
     private List<CommentDTO> commentList; // 게시글 댓글 리스트
 
 
     // entity -> dto
-    public static GetBoardDetailsResponseDTO toDTOList(Board board) {
+    public static GetBoardDetailsResponseDTO of(Board board) {
         return GetBoardDetailsResponseDTO.builder()
                 .boardId(board.getId())
                 .title(board.getTitle())
@@ -60,7 +59,7 @@ public class GetBoardDetailsResponseDTO {
                 .filepath(board.getFilepath())
                 .heartCount((long) board.getHeart().size()) // 좋아요 수
                 .scrapCount((long) board.getScrap().size()) // 댓글 수
-                .categoryList(BoardCategoryDTO.toCategoryDTO(board.getBoardCategoryList()))
+                .categoryList(board.getBoardCategoryList())
                 .commentList(CommentDTO.toCommentDTO(board.getCommentList()))
                 .build();
     }

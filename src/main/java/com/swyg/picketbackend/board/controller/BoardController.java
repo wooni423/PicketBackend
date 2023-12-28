@@ -1,6 +1,4 @@
 package com.swyg.picketbackend.board.controller;
-
-import com.swyg.picketbackend.board.dto.req.board.GetBoardListRequestDTO;
 import com.swyg.picketbackend.board.dto.req.board.PostBoardRequestDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetBoardDetailsResponseDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetBoardListResponseDTO;
@@ -34,7 +32,6 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
-
 
     // Todo: 완료
     @Operation(summary = "나의 버킷리스트 조회", description = "로그인한 회원의 버킷리스트 조회 api 퀴리스트링에 memberId 필요")

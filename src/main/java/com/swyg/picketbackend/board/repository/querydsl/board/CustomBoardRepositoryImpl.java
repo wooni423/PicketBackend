@@ -5,28 +5,22 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.swyg.picketbackend.auth.domain.QMember;
 import com.swyg.picketbackend.board.Entity.*;
-import com.swyg.picketbackend.board.dto.req.board.GetBoardListRequestDTO;
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Repository
 public class CustomBoardRepositoryImpl implements CustomBoardRepository {
 
-    @PersistenceContext
     private final EntityManager entityManager;
 
     private final JPAQueryFactory jpaQueryFactory;
@@ -34,8 +28,17 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
     @Override
     public Board findBoardWithDetails(Long boardId) {
         QBoard boardDetails = QBoard.board;
+        QCategory category = QCategory.category;
+        EntityGraph<?> entityGraph = entityManager.getEntityGraph("Board.detail");
 
-        EntityGraph<?> entityGraph = entityManager.createEntityGraph(Board.class);
+
+        return jpaQueryFactory
+                .selectFrom(boardDetails)
+                .where(boardDetails.id.eq(boardId),
+                        boardDetails.boardCategoryList.isNotEmpty())
+                .fetchOne();
+
+        /*EntityGraph<?> entityGraph = entityManager.createEntityGraph(Board.class);
         entityGraph.addSubgraph("commentList");
         entityGraph.addSubgraph("boardCategoryList");
         entityGraph.addSubgraph("heart");
@@ -45,7 +48,7 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
         return jpaQueryFactory
                 .selectFrom(boardDetails)
                 .where(boardDetails.id.eq(boardId))
-                .fetchOne();
+                .fetchOne();*/
     }
 
     @Override
@@ -88,13 +91,6 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1) // 1개 더 가져와서 hasNext 여부 확인
                 .fetch();
-
-      /*  // 다음 페이지 확인
-        boolean hasNext = jpaQueryFactory
-                .selectFrom(board)
-                .where(searchCondition)
-                .offset(pageable.getOffset() + pageable.getPageSize())
-                .limit(1);*/
 
 
         return null;

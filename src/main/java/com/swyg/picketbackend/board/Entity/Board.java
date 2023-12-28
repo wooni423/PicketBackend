@@ -17,6 +17,18 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+// 지연 로딩으로 연관 테이블 객체들을 패치 조인하기 위한 Entity Graph 설정
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Board.detail",
+                attributeNodes = {
+                        @NamedAttributeNode("member"),
+                        @NamedAttributeNode("heart"),
+                        @NamedAttributeNode("scrap"),
+                        @NamedAttributeNode("boardCategoryList"),
+                        @NamedAttributeNode("commentList")
+                }
+        )}
+)
 @Log4j2
 @Entity
 @Getter
@@ -31,10 +43,10 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @Column(name = "board_id")
     private Long id;  // 게시글 번호
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "title")
     private String title; // 게시글 제목
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "content")
     private String content; // 게시글 내용
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -59,6 +71,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @JsonManagedReference
     private List<Scrap> scrap = new ArrayList<>(); // 스크랩
 
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 1000)
     @JsonManagedReference
@@ -68,6 +81,8 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @BatchSize(size = 1000)
     private List<Comment> commentList = new ArrayList<>();
 
+    @Column
+    private int isCompleted; // 완료 여부  0: 진행 중  1: 완료
 
     // dto -> entity
     public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath) {
@@ -80,6 +95,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
                 .filepath(filepath)
                 .heart(null)
                 .scrap(null)
+                .isCompleted(0)
                 .build();
     }
 
