@@ -1,8 +1,6 @@
 package com.swyg.picketbackend.board.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.swyg.picketbackend.auth.domain.Member;
 import com.swyg.picketbackend.board.dto.req.board.PatchBoardRequestDTO;
 import com.swyg.picketbackend.board.dto.req.board.PostBoardRequestDTO;
@@ -35,7 +33,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "")
 public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생성
 
     @Id
@@ -43,18 +40,23 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @Column(name = "board_id")
     private Long id;  // 게시글 번호
 
-    @Column(columnDefinition = "title")
+    @Column(columnDefinition = "VARCHAR(3000)")
     private String title; // 게시글 제목
 
-    @Column(columnDefinition = "content")
+    @Column(columnDefinition = "VARCHAR(3000)")
     private String content; // 게시글 내용
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate deadline; // 종료 날짜
 
+    @Column(columnDefinition = "VARCHAR(3000)")
     private String filename; // 파일 이름
 
+    @Column(columnDefinition = "VARCHAR(3000)")
     private String filepath; // 파일 경로
+
+    @Column
+    private Long isCompleted; // 완료 여부  0: 진행 중  1: 완료
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false) // member_id가 반드시 존재해야 함
     @JoinColumn(name = "member_id")
@@ -81,8 +83,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     @BatchSize(size = 1000)
     private List<Comment> commentList = new ArrayList<>();
 
-    @Column
-    private int isCompleted; // 완료 여부  0: 진행 중  1: 완료
+
 
     // dto -> entity
     public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath) {
@@ -95,7 +96,7 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
                 .filepath(filepath)
                 .heart(null)
                 .scrap(null)
-                .isCompleted(0)
+                .isCompleted(0L)
                 .build();
     }
 
