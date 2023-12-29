@@ -54,11 +54,13 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         log.info(tokenResponse.getBody());
         log.info("Access Token: {}", accessToken);
 
+        response.addHeader("Authorization", "Bearer " + accessToken);
 
+        response.sendRedirect("http://localhost:8080/auth/social-success");
     }
 
     private ResponseEntity<String> sendLoginRequest(LoginDTO loginDTO) { // 로그인 요청
-        String loginUrl = "http://localhost:8080/auth/login";
+        String loginUrl = "http://52.79.248.192:8080/auth/login";
 
         // Set up headers
         HttpHeaders headers = new HttpHeaders();

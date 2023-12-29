@@ -26,7 +26,7 @@ public class PrincipalOauthDetailService extends DefaultOAuth2UserService { // 0
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-
+    // TODO : http://52.79.248.192:8080/oauth2/authorization/google
     // 구글로부터 받은 userRequest 데이터에 대한 후처리되는 함수
     @Transactional
     @Override

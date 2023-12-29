@@ -51,14 +51,14 @@ public class AuthController {
         authService.signup(signupRequestDTO);
         return SuccessResponse.success(SuccessCode.SIGNUP_SUCCESS);
     }
-    
+
     // TODO : 완료
     @Operation(summary = "로그인", description = "로그인을 통해 인증을 위한 엑세스 토큰 및 리프레쉬 토큰을 획득한다.(response body로 리턴)")
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(authService.login(loginDTO));
     }
-    
+
     // TODO : 완료
     @Operation(summary = "토큰 재발급", description = "토큰이 만료되거나 유효하지 않으면 재발급한다.(response body로 리턴)")
     @PostMapping("/reissue")
@@ -66,7 +66,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.reissue(tokenRequestDto));
     }
 
-    
+
     // TODO : 완료
     @Operation(summary = "가입 이메일로 비밀번호 초기화", description = "비밀번호 찾기 API")
     @PatchMapping("/reset-password")
@@ -75,6 +75,12 @@ public class AuthController {
         return SuccessResponse.success(SuccessCode.PASSWORD_UPDATE_MAIL_SUCCESS);
     }
 
+
+    @Operation(summary = "가입 이메일로 비밀번호 초기화", description = "비밀번호 찾기 API")
+    @GetMapping("/social-success")
+    public String socialSuccess() {
+        return "소셜 성공";
+    }
 
 }
 

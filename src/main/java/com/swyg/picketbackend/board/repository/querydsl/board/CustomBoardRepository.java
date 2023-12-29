@@ -1,6 +1,7 @@
 package com.swyg.picketbackend.board.repository.querydsl.board;
 
 import com.swyg.picketbackend.board.Entity.Board;
+import com.swyg.picketbackend.board.Entity.BoardCategory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -12,8 +13,7 @@ public interface CustomBoardRepository {
 
     Slice<Board> findMyBoardList(Long memberId,Long lastBoardId,Pageable pageable);
 
-    Slice<Board> boardSearchList(Long lastBoardId,String keyword, List<Long> CategoryList, Pageable pageable);
-
+    Slice<Board> findBoardSearchList(Long lastBoardId, String keyword, List<Long> CategoryList, Pageable pageable);
 
 
 }

@@ -50,13 +50,15 @@ public class BoardController {
 
     @Operation(summary = "전체&카테고리&검색 기반 버킷리스트 조회", description = "전체 또는 검색 조건에 따른 무한 스크롤 버킷리스트 목록을 반환하는 api")
     @GetMapping("/list/search") // 전체 버킷 리스트 조회
-    public Slice<GetBoardListResponseDTO> boardSearchList(
+    public ResponseEntity<?> boardSearchList(
             @RequestParam(name = "lastBoardId", required = false) Long lastBoardId,
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "categoryList", required = false) List<Long> categoryList,
             @PageableDefault(size = 8, page = 0) Pageable pageable) {
-        return boardService.searchBoardList(lastBoardId, keyword, categoryList, pageable);
-
+        Slice<GetBoardListResponseDTO> searchList = boardService.searchBoardList(lastBoardId, keyword, categoryList, pageable);
+        return (searchList == null || searchList.isEmpty()) ?
+                ResponseEntity.status(HttpStatus.SC_OK).body("empty") :
+                ResponseEntity.status(HttpStatus.SC_OK).body(searchList);
     }
 
     // TODO : 완료

@@ -36,7 +36,27 @@ import java.util.List;
                         )
                 }
 
-        )}
+        ),
+        @NamedEntityGraph(name = "Board.search",
+                attributeNodes = {
+                        @NamedAttributeNode("member"),
+                        @NamedAttributeNode("heart"),
+                        @NamedAttributeNode("scrap"),
+                        @NamedAttributeNode("boardCategoryList"),
+                        @NamedAttributeNode(value = "boardCategoryList", subgraph = "boardCategoryListGraph")
+                },
+                subgraphs = {
+                        @NamedSubgraph(
+                                name = "boardCategoryListGraph",
+                                attributeNodes = {
+                                        @NamedAttributeNode("category")
+                                }
+                        )
+                }
+
+        )
+
+}
 )
 @Log4j2
 @Entity

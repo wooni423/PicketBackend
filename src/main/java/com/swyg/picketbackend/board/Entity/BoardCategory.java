@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Log4j2
 @Entity
@@ -33,6 +36,21 @@ public class BoardCategory { // Board와 category의 중간 테이블
     public BoardCategory(Board board, Category category) {
         this.board = board;
         this.category = category;
+    }
+
+
+    // category -> boardCategory
+    public static BoardCategory toEntity(Category category){
+        return BoardCategory.builder()
+                .category(category)
+                .build();
+    }
+
+    // categoryList -> boardCategoryList
+    public static List<BoardCategory> toEntityList(List<Category> categoryList){
+        return categoryList.stream()
+                .map(BoardCategory::toEntity)
+                .toList();
     }
 
 }

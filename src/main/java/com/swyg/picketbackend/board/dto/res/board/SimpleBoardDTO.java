@@ -36,7 +36,7 @@ public class SimpleBoardDTO {
         this.filepath = board.getFilepath();
         this.heartCount = (long) board.getHeart().size();
         this.scrapCount = (long) board.getScrap().size();
-        this.categoryList = BoardCategoryDTO.toCategoryDTO(board.getBoardCategoryList()); // 카테고리 목록 설정
+        this.categoryList = BoardCategoryDTO.toCategoryDTOList(board.getBoardCategoryList()); // 카테고리 목록 설정
         this.commentList = CommentDTO.toCommentDTO(board.getCommentList()); // 댓글 목록 설정
     }
 

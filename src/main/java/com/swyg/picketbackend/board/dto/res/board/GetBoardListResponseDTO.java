@@ -2,6 +2,7 @@ package com.swyg.picketbackend.board.dto.res.board;
 
 
 import com.swyg.picketbackend.board.Entity.Board;
+import com.swyg.picketbackend.board.dto.util.BoardCategoryDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,16 +31,35 @@ public class GetBoardListResponseDTO {
     private LocalDate deadline; // 마감 기한
 
     @Schema(description = "좋아요 개수", example = "10")
-    private Long likeCount; // 마감 기한
+    private Long likeCount; // 좋아요 개수
 
     @Schema(description = "스크랩 개수", example = "10")
-    private Long ScrapCount; // 마감 기한
+    private Long scrapCount; // 스크랩 개수
 
     @Schema(description = "파일 이름", example = "S3 파일 이름")
     private String filename; // 파일 이름
 
     @Schema(description = "파일 경로", example = "S3 이미지 경로")
     private String filepath; // 파일 경로
+
+    @Schema(description = "게시물 카테고리 분류", example = "게시물 카테고리 분류")
+    private List<BoardCategoryDTO> categoryList; // 파일 경로
+
+
+    // entity -> dto
+    public static GetBoardListResponseDTO toDTO(Board board) {
+        return GetBoardListResponseDTO.builder()
+                .boardId(board.getId())
+                .title(board.getTitle())
+                .nickname(board.getMember().getNickname())
+                .deadline(board.getDeadline())
+                .likeCount((long) board.getHeart().size())
+                .scrapCount((long) board.getScrap().size())
+                .filename(board.getFilename())
+                .filepath(board.getFilepath())
+                .categoryList(BoardCategoryDTO.toCategoryDTOList(board.getBoardCategoryList()))
+                .build();
+    }
 
 
     // entityList -> dtoList
@@ -51,18 +71,5 @@ public class GetBoardListResponseDTO {
         return new SliceImpl<>(dtoList, boardList.getPageable(), boardList.hasNext());
     }
 
-    // entity -> dto
-    public static GetBoardListResponseDTO toDTO(Board board) {
-        return GetBoardListResponseDTO.builder()
-                .boardId(board.getId())
-                .title(board.getTitle())
-                .nickname(board.getMember().getNickname())
-                .deadline(board.getDeadline())
-                .likeCount((long) board.getHeart().size())
-                .ScrapCount((long) board.getScrap().size())
-                .filename(board.getFilename())
-                .filepath(board.getFilepath())
-                .build();
-    }
 
 }
