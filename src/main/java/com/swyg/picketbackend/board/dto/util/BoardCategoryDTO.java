@@ -12,7 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class BoardCategoryDTO { // 버킷의 카테고리 및 id를 가져오는 DTO
+public class BoardCategoryDTO { // 버킷의 카테고리 ID 및 이름을 가져오는 DTO
 
     private Long categoryId;
 

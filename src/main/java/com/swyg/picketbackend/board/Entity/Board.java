@@ -13,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 // 지연 로딩으로 연관 테이블 객체들을 패치 조인하기 위한 Entity Graph 설정
@@ -23,8 +24,18 @@ import java.util.List;
                         @NamedAttributeNode("heart"),
                         @NamedAttributeNode("scrap"),
                         @NamedAttributeNode("boardCategoryList"),
+                        @NamedAttributeNode(value = "boardCategoryList", subgraph = "boardCategoryListGraph"),
                         @NamedAttributeNode("commentList")
+                },
+                subgraphs = {
+                        @NamedSubgraph(
+                                name = "boardCategoryListGraph",
+                                attributeNodes = {
+                                        @NamedAttributeNode("category")
+                                }
+                        )
                 }
+
         )}
 )
 @Log4j2
@@ -87,9 +98,8 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
     private List<Comment> commentList = new ArrayList<>();
 
 
-
     // dto -> entity
-    public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath,String vectorJson) {
+    public static Board toEntity(PostBoardRequestDTO postBoardRequestDTO, Member member, String filename, String filepath, String vectorJson) {
         return Board.builder()
                 .title(postBoardRequestDTO.getTitle())
                 .content(postBoardRequestDTO.getContent())
@@ -98,8 +108,8 @@ public class Board extends BaseEntity {  // 생성날짜,수정날짜 자동 생
                 .filename(filename)
                 .filepath(filepath)
                 .vector(vectorJson)
-                .heart(null)
-                .scrap(null)
+                .heart(Collections.emptyList())
+                .scrap(Collections.emptyList())
                 .isCompleted(0L)
                 .build();
     }

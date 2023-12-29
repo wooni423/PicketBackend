@@ -48,7 +48,7 @@ public class GetBoardDetailsResponseDTO {
     @Schema(description = "버킷 카테고리", example = "[3 건강,4 자기개발]")
     private List<BoardCategory> categoryList;  // 카테고리 번호 및 이름가져오기
 
-    @Schema(description = "버킷 댓글 목록", example = "댓글 작성자 닉네임,댓글내용,작성날짜,수정날짜")
+    @Schema(description = "버킷 댓글 목록", example = "댓글 작성자 닉네임,댓글내용, 작성날짜, 수정날짜")
     private List<CommentDTO> commentList; // 게시글 댓글 리스트
 
     @JsonProperty("recommendedPosts")

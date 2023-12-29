@@ -3,6 +3,8 @@ package com.swyg.picketbackend.board.dto.res.board;
 import com.swyg.picketbackend.board.Entity.Board;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 
 import java.time.LocalDate;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetMyBoardListResponseDTO {
-    
+
     @Schema(description = "버킷 번호", example = "1")
     private Long boardId;  // 게시글 번호
 
@@ -24,9 +26,6 @@ public class GetMyBoardListResponseDTO {
 
     @Schema(description = "버킷 내용", example = "버킷 내용")
     private String content; // 게시글 내용
-
-    @Schema(description = "버킷 작성자 닉네임", example = "닉네임")
-    private String nickname; // 작성자 닉네임
 
     @Schema(description = "마감기한", example = "2023-12-30")
     private LocalDate deadline; // 마감 기한
@@ -39,12 +38,11 @@ public class GetMyBoardListResponseDTO {
 
 
     // entity -> dto
-    public static GetMyBoardListResponseDTO toDTO(Board board){
+    public static GetMyBoardListResponseDTO toDTO(Board board) {
         return GetMyBoardListResponseDTO.builder()
                 .boardId(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .nickname(board.getMember().getNickname())
                 .deadline(board.getDeadline())
                 .filename(board.getFilename())
                 .filepath(board.getFilepath())
@@ -52,10 +50,12 @@ public class GetMyBoardListResponseDTO {
     }
 
     // entityList -> dtoList
-    public static List<GetMyBoardListResponseDTO> toDTOList(List<Board> boardList){
-        return boardList.stream()
+    public static Slice<GetMyBoardListResponseDTO> toDTOList(Slice<Board> boardList) {
+        List<GetMyBoardListResponseDTO> dtoList = boardList.stream()
                 .map(GetMyBoardListResponseDTO::toDTO)
-                .collect(Collectors.toList());
+                .toList();
+
+        return new SliceImpl<>(dtoList, boardList.getPageable(), boardList.hasNext());
     }
 
 }

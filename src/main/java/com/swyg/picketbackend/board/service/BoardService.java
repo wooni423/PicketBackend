@@ -51,15 +51,16 @@ public class BoardService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+
     // 나의 버킷 리스트 조회
     @Transactional
-    public List<GetMyBoardListResponseDTO> findMyBoardList() { // 나의 버킷리스트 조회
+    public Slice<GetMyBoardListResponseDTO> findMyBoardList(Long lastBoardId, Pageable pageable) { // 나의 버킷리스트 조회
 
         Long currentMemberId = SecurityUtil.getCurrentMemberId(); // 현재 로그인한 회원 ID
 
-        List<Board> myBoardList = boardRepository.findAllByMemberId(currentMemberId);
+        Slice<Board> resultList = boardRepository.findMyBoardList(currentMemberId, lastBoardId, pageable);
 
-        return GetMyBoardListResponseDTO.toDTOList(myBoardList);
+        return GetMyBoardListResponseDTO.toDTOList(resultList);
     }
 
     @Transactional
@@ -115,7 +116,7 @@ public class BoardService {
         String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + filename;
 
         // dto -> Entity
-        Board board = Board.toEntity(postBoardRequestDTO, member, filename, fileUrl,vectorJson);
+        Board board = Board.toEntity(postBoardRequestDTO, member, filename, fileUrl, vectorJson);
 
         Board boardEntity = boardRepository.save(board);
 
@@ -142,7 +143,7 @@ public class BoardService {
         String vectorJson = runPythonScript(combinedText); // 파이썬 스크립트 실행
 
         // dto -> Entity
-        Board board = Board.toEntity(postBoardRequestDTO, member, null, null,vectorJson);
+        Board board = Board.toEntity(postBoardRequestDTO, member, null, null, vectorJson);
 
         Board boardEntity = boardRepository.save(board);
 

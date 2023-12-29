@@ -10,6 +10,8 @@ public interface CustomBoardRepository {
 
     Board findBoardWithDetails(Long boardId);
 
+    Slice<Board> findMyBoardList(Long memberId,Long lastBoardId,Pageable pageable);
+
     Slice<Board> boardSearchList(Long lastBoardId,String keyword, List<Long> CategoryList, Pageable pageable);
 
 

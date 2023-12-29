@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -25,32 +26,57 @@ public class CustomBoardRepositoryImpl implements CustomBoardRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    QBoard board = QBoard.board;
+
+    // 게시물 상세 보기
     @Override
     public Board findBoardWithDetails(Long boardId) {
 
-        QBoard boardDetails = QBoard.board;
-        QCategory category = QCategory.category;
         EntityGraph<?> entityGraph = entityManager.getEntityGraph("Board.detail");
 
-
         return jpaQueryFactory
-                .selectFrom(boardDetails)
-                .where(boardDetails.id.eq(boardId),
-                        boardDetails.boardCategoryList.isNotEmpty())
+                .selectFrom(board)
+                .where(board.id.eq(boardId))
                 .fetchOne();
-
-        /*EntityGraph<?> entityGraph = entityManager.createEntityGraph(Board.class);
-        entityGraph.addSubgraph("commentList");
-        entityGraph.addSubgraph("boardCategoryList");
-        entityGraph.addSubgraph("heart");
-        entityGraph.addSubgraph("scrap");
-        entityGraph.addSubgraph("member");
-
-        return jpaQueryFactory
-                .selectFrom(boardDetails)
-                .where(boardDetails.id.eq(boardId))
-                .fetchOne();*/
     }
+
+
+    // 나의 게시글 목록 보기(no-offset 무한 스크롤 처리)
+    @Override
+    public Slice<Board> findMyBoardList(Long memberId, Long lastBoardId, Pageable pageable) {
+
+        List<Board> resultList = jpaQueryFactory
+                .selectFrom(board)
+                .where(
+                        isExistLastBoardId(lastBoardId),
+                        board.member.id.eq(memberId)
+                )
+                .orderBy(board.id.desc())
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        return checkLastPage(pageable, resultList);
+    }
+
+    // no -offset 방식 처리 메서드
+    private BooleanExpression isExistLastBoardId(Long lastBoardId) {
+        return lastBoardId == null ? null : board.id.lt(lastBoardId);
+
+    }
+
+    // 무한 스크롤 방식 처리 하는 메서드
+    private Slice<Board> checkLastPage(Pageable pageable, List<Board> resultList) {
+        boolean hasNext = false;
+
+        // 조회한 결과 개수가 요청한 페이지 사이즈 보다 크면 뒤에 더 있음, next = true
+        if (resultList.size() > pageable.getPageSize()) {
+            hasNext = true;
+            resultList.remove(pageable.getPageSize());
+        }
+
+        return new SliceImpl<>(resultList, pageable, hasNext);
+    }
+
 
     @Override
     public Slice<Board> boardSearchList(Long lastBoardId, String keyword, List<Long> categoryList, Pageable pageable) {

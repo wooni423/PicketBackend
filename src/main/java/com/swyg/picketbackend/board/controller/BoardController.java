@@ -1,4 +1,5 @@
 package com.swyg.picketbackend.board.controller;
+
 import com.swyg.picketbackend.board.dto.req.board.PostBoardRequestDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetBoardDetailsResponseDTO;
 import com.swyg.picketbackend.board.dto.res.board.GetBoardListResponseDTO;
@@ -33,11 +34,14 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    // Todo: 완료
+    //
     @Operation(summary = "나의 버킷리스트 조회", description = "로그인한 회원의 버킷리스트 조회 api 퀴리스트링에 memberId 필요")
     @GetMapping("/myposts") // 나의 버킷 리스트 조회
-    public ResponseEntity<?> myBoardList() {
-        List<GetMyBoardListResponseDTO> myBoardList = boardService.findMyBoardList();
+    public ResponseEntity<?> myBoardList(
+            @RequestParam(value = "lastBoardId", required = false) Long lastBoardId,
+            @PageableDefault(size = 8, page = 0) Pageable pageable
+    ) {
+        Slice<GetMyBoardListResponseDTO> myBoardList = boardService.findMyBoardList(lastBoardId, pageable);
         return (myBoardList == null || myBoardList.isEmpty()) ?
                 ResponseEntity.status(HttpStatus.SC_OK).body("empty") :
                 ResponseEntity.status(HttpStatus.SC_OK).body(myBoardList);
@@ -47,7 +51,7 @@ public class BoardController {
     @Operation(summary = "전체&카테고리&검색 기반 버킷리스트 조회", description = "전체 또는 검색 조건에 따른 무한 스크롤 버킷리스트 목록을 반환하는 api")
     @GetMapping("/list/search") // 전체 버킷 리스트 조회
     public Slice<GetBoardListResponseDTO> boardSearchList(
-            @RequestParam(name = "lastBoardId", required = true) Long lastBoardId,
+            @RequestParam(name = "lastBoardId", required = false) Long lastBoardId,
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "categoryList", required = false) List<Long> categoryList,
             @PageableDefault(size = 8, page = 0) Pageable pageable) {
