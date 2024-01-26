@@ -36,10 +36,10 @@ public class GetBoardListResponseDTO {
     @Schema(description = "스크랩 개수", example = "10")
     private Long scrapCount; // 스크랩 개수
 
-    @Schema(description = "파일 이름", example = "S3 파일 이름")
-    private String filename; // 파일 이름
+    @Schema(description = "프로필 이미지", example = "프로필 이미지")
+    private String profileUrl; // 파일 이름
 
-    @Schema(description = "파일 경로", example = "S3 이미지 경로")
+    @Schema(description = "버킷 이미지", example = "S3 버킷 이미지")
     private String filepath; // 파일 경로
 
     @Schema(description = "완료 여부", example = "버킷 완료 여부")
@@ -58,7 +58,7 @@ public class GetBoardListResponseDTO {
                 .deadline(board.getDeadline())
                 .likeCount((long) board.getHeart().size())
                 .scrapCount((long) board.getScrap().size())
-                .filename(board.getFilename())
+                .profileUrl(board.getMember().getImageUrl())
                 .filepath(board.getFilepath())
                 .categoryList(BoardCategoryDTO.toCategoryDTOList(board.getBoardCategoryList()))
                 .isCompleted(board.getIsCompleted())
